@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  fastapi-app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_CONNECTION_STRING=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@db/${DB_NAME}
+    networks:
+      - app-network
+  
+  db:
+    image: mariadb:10.6.17-focal
+    ports:
+      - 3307:3307
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - app-network
+
+  vector-db:
+    image: qdrant/qdrant:latest-unprivileged
+    ports:
+      - "6333:6333"
+    environment:
+      - VECTOR_DB_PASSWORD=${VECTOR_DB_PASSWORD}
+    networks:
+      - app-network
+
+volumes:
+  db-data:
+
+networks:
+  app-network:
+    driver: bridge
