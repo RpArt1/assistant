@@ -5,21 +5,21 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DB_CONNECTION_STRING=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@db/${DB_NAME}
+      - DB_CONNECTION_STRING=mysql+aiomysql://${DB_USER}:${DB_PASSWORD}@db/${DB_NAME}
     networks:
       - app-network
   
   db:
     image: mariadb:10.6.17-focal
     ports:
-      - 3307:3307
+      - 3307:3306
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASSWORD}
     volumes:
-      - db-data:/var/lib/mysql
+      - assistant_db-data:/var/lib/mysql
     networks:
       - app-network
 
@@ -33,7 +33,7 @@ services:
       - app-network
 
 volumes:
-  db-data:
+  assistant_db-data:
 
 networks:
   app-network:

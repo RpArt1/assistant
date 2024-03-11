@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import logging
-
+from .routers import router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,3 +23,5 @@ def get_test():
 def post_test():
     logging.info("Test endpoint called")
     return {"post test": "ok"}
+
+app.include_router(router.router, prefix="/memories", tags=["memories"])
