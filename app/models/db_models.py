@@ -2,7 +2,6 @@ from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime
 from sqlalchemy.dialects.mysql import CHAR, LONGTEXT
 from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
-import json
 
 Base = declarative_base()
 

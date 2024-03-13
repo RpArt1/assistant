@@ -28,7 +28,7 @@ class MemoryCreate(BaseModel):
 
 class MemoryResponse(BaseModel):
     id: int = Field(..., description="Database ID of the memory")
-    uuid: uuid4 = Field(..., description="Unique identifier for the memory")
+    uuid: str = Field(..., description="Unique identifier for the memory")
     name: Optional[str] = Field(None, max_length=255, description="Name of the memory")
     content: Optional[str] = Field(None, description="Content of the memory")
     reflection: Optional[str] = Field(None, description="Personal reflection on the memory")
