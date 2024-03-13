@@ -4,6 +4,7 @@ services:
     build: .
     ports:
       - "8000:8000"
+      - "5678:5678"
     environment:
       - DB_CONNECTION_STRING=mysql+aiomysql://${DB_USER}:${DB_PASSWORD}@db/${DB_NAME}
     networks:

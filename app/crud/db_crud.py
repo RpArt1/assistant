@@ -18,4 +18,8 @@ async def create_memory(db: AsyncSession, memory: MemoryCreate) -> Memory:
     db.add(db_memory)
     await db.commit()
     await db.refresh(db_memory)
+    
+    db_memory.tags = json.loads(db_memory.tags)
+
+
     return db_memory

@@ -6,7 +6,8 @@ from ..crud.db_crud import create_memory
 
 router = APIRouter()
 
-@router.post("/memories/", response_model=MemoryResponse)
+@router.post("/", response_model=MemoryResponse)
 async def create_memory_route(memory: MemoryCreate, db: AsyncSession = Depends(get_db_session)):
-    return await create_memory(db=db, memory=memory)
+    memory_response =  await create_memory(db=db, memory=memory)
+    return memory_response 
 
