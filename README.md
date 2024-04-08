@@ -27,9 +27,8 @@ This project is a FastAPI-based application designed to manage "memories" using 
 
 
 ## Setup and run application 
-docker-compose build
-docker-compose run
+docker compose build && docker compose up
 
-## tet running 
+## test running 
 
 go to http://localhost:8000 and try test endpoint 
