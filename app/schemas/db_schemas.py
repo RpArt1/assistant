@@ -2,9 +2,10 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 from uuid import uuid4
 from datetime import datetime
+from fastapi import UploadFile, File
 
 class MemoryCreate(BaseModel):
-    uuid: uuid4 = Field(..., description="Unique identifier for the memory")
+    uuid: Optional[uuid4] = Field(None, description="Unique identifier for the memory")
     name: Optional[str] = Field(None, max_length=255, description="Name of the memory")
     content: Optional[str] = Field(None, description="Content of the memory")
     reflection: Optional[str] = Field(None, description="Personal reflection on the memory")
@@ -13,13 +14,13 @@ class MemoryCreate(BaseModel):
     source: Optional[str] = Field(None, max_length=255, description="Source of the memory")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "uuid": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
                 "name": "Summer Vacation",
                 "content": "We went to the beach...",
                 "reflection": "It was a great day...",
-                "tags": ["vacation", "beach", "summer"],
+                # "tags": ["vacation", "beach", "summer"],
                 "active": True,
                 "source": "personal"
             }
@@ -38,9 +39,9 @@ class MemoryResponse(BaseModel):
     created_at: datetime = Field(..., description="The date and time the memory was created")
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "id": 1,
                 "uuid": "f47ac10b-58cc-4372-a567-0e02b2c3d479",

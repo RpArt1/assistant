@@ -1,17 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from ..dependencies import get_db_session
-from ..schemas.db_schemas import MemoryCreate, MemoryResponse
-from ..crud.db_crud import create_memory
+import uuid
+from fastapi import APIRouter, UploadFile
 import logging
+
 
 router = APIRouter()
 
-@router.post("/", response_model=MemoryResponse)
-async def create_memory_route(memory: MemoryCreate, db: AsyncSession = Depends(get_db_session)):
+
+@router.post("/")
+async def create_memory(message: str, client_uuid: str = None,  file: UploadFile = None):
+
     try:
-        memory_response =  await create_memory(db=db, memory=memory)
-        return memory_response 
+        if client_uuid is None:
+            message_uuid = str(uuid.uuid4())
+        else: 
+            message_uuid = client_uuid
+            
+        logging.info(f"Message processed sucesfully uuid: {message_uuid}, stored text: {message}")
+        return {"message": "Data stored successfully", "uuid": message_uuid, "stored text": message}
+    
     except Exception as e: 
         logging.ERROR(e, ext_info=True)
 
