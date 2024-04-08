@@ -5,7 +5,7 @@ from datetime import datetime
 from fastapi import UploadFile, File
 
 class MemoryCreate(BaseModel):
-    uuid: Optional[uuid4] = Field(None, description="Unique identifier for the memory")
+    uuid: Optional[uuid4] = Field(default_factory=uuid4, description="Unique identifier for the memory")
     name: Optional[str] = Field(None, max_length=255, description="Name of the memory")
     content: Optional[str] = Field(None, description="Content of the memory")
     reflection: Optional[str] = Field(None, description="Personal reflection on the memory")
