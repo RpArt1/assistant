@@ -6,13 +6,25 @@ import logging
 from ..schemas.db_schemas import MemoryCreate
 from sqlalchemy.ext.asyncio import AsyncSession
 import re
+from ..services.ai_service import categorise_user_query
 
 router = APIRouter()
 
 
 @router.post("/")
-async def create_memory(message: str, client_uuid: str = None,  file: UploadFile = None, db: AsyncSession = Depends(get_db_session)):
+async def process_user_query(message: str, client_uuid: str = None,  file: UploadFile = None, db: AsyncSession = Depends(get_db_session)):
+    ## categorize query from user with first prompt 
+    
+    ## depnding on what json is returned thake action 
+    
+    user_query_categorisation = categorise_user_query(message)
 
+
+async def store_memory(message: str, client_uuid: str = None,  file: UploadFile = None, db: AsyncSession = Depends(get_db_session)):    
+    ## 1. save file to database if tool is memory 
+    ## 2. post message to todo app if tools is todo
+    ## 3. answer directly from LLM 
+    ## 4. find matching data from db if tags are added 
     try:
         file_content, file_name = await get_file_data(file )
 
