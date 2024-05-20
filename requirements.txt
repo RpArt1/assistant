@@ -5,3 +5,5 @@ aiomysql==0.2.0
 python-dotenv==1.0.1
 debugpy==1.8.1
 python-multipart==0.0.9
+openai==1.28.1
+pydantic==2.7.1
