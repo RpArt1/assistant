@@ -2,53 +2,52 @@ from typing import List
 from pydantic import BaseModel, Field
 from typing import Literal
 import json
-import enum
+from enum import Enum
 from openai import OpenAI
 from os import environ
 import logging
 from ..utils import file_processor
 
-class ToolEnum (str,enum.Enum):
-    MEMO = "memory"
+class ToolEnum (str, Enum):
+    MEMORY = "memory"
     TODO = "todo"
 
-class TagEnum (str,enum.Enum):
+class TagEnum (str, Enum):
     BRAIN = "brain"
     PSYCHOLOGY = "psychology"
     AI = "ai"
     PYTHON = "python"
     TODO = "todo"
     MEMORY = "memory"
-    TONY = "tony"
-    OTHER = "other"
+    XIO = "Xio"
 
 #TYPES 
-class TypeEnum(str, enum.Enum):
+class TypeEnum(str,  Enum):
     QUERY = "query"
     ACTION = "action"
 
 class QueryModel(BaseModel):
     type : TypeEnum = Field(default=TypeEnum.QUERY, description="classification type")
-    tags :  TagEnum = Field(...)
+    tags: List[TagEnum] = Field(..., description="Tags related to the message")
 
 class ActionModel(BaseModel):
     type : TypeEnum = Field(default=TypeEnum.ACTION, description="classification type")
-    tool : ToolEnum = Field(...)
-    content : str
+    tool: List[ToolEnum] = Field(..., description="Tools related to the message")
+    content: str = Field(..., description="Content of the action")
 
 
 # Create two possible functions to choose from: 
 function_list = [
     {
-        "name" : "query",
-        "description" : "Categorises user message as query, if none tag is matching choose other",
-        "parameters" : QueryModel.model_json_schema(),
+        "name" : "classify_as_query",
+        "description" : "Categorises user message as query",
+        "parameters" : QueryModel.schema(),
         "required": ["type", "tags"]
     },
     {
-        "name": "action",
-        "description": "Categorises user message as action to be done and fills proper fields specified in required",
-        "parameters": ActionModel.model_json_schema(),
+        "name": "clasify_as_action",
+        "description": "Categorizes user message as an action to be done and fills in the required fields.",
+        "parameters": ActionModel.schema(),
         "required": ["type", "tool", "content"]
     }
 ]
