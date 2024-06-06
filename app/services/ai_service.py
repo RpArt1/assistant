@@ -41,13 +41,13 @@ function_list = [
     {
         "name" : "classify_as_query",
         "description" : "Categorises user message as query",
-        "parameters" : QueryModel.schema(),
+        "parameters" : QueryModel.model_json_schema(),
         "required": ["type", "tags"]
     },
     {
         "name": "clasify_as_action",
         "description": "Categorizes user message as an action to be done and fills in the required fields.",
-        "parameters": ActionModel.schema(),
+        "parameters": ActionModel.model_json_schema(),
         "required": ["type", "tool", "content"]
     }
 ]
@@ -60,18 +60,13 @@ def categorise_user_query(message: str ):
         message (str): user message
     """
     try:
+        logging.info(f"Query: {message}")
         categorisation_system_prompt = file_processor.process_file("../prompts/categorisation_prompt.md")
         user_query_categorisation = call_ai(message, categorisation_system_prompt, function_list)
-
-        message_type = user_query_categorisation.get('type')
-        tags = user_query_categorisation.get('tags')
-        tool = user_query_categorisation.get('tool')
-        content = user_query_categorisation.get('content')
-        logging.info(f"Query categorised : message type: {message_type}, tags: {tags}, tool: {tool}, content {content}")
-
-
+        logging.info(f"Query categorization : {user_query_categorisation}")
+        return user_query_categorisation
     except (FileNotFoundError, KeyError, Exception) as e:
-        logging.error(f"User query cannot be categorised")
+        logging.error(f"Query cannot be categorised")
 
 
 def call_ai(message: str, system_prompt: str, function_list: list=None): 
@@ -101,7 +96,7 @@ def call_ai(message: str, system_prompt: str, function_list: list=None):
         if (response.function_call is not None and response.function_call.arguments is not None ):
             function_arguments = json.loads(response.function_call.arguments) 
             logging.info(f"Output from ai => {function_arguments}")
-            return function_arguments
+            return function_arguments['arguments']
         else: 
             logging.error("No function was choosen, response content: {response.content} ")
             raise Exception

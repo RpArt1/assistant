@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   fastapi-app:
     build: .
@@ -7,9 +6,17 @@ services:
       - "5678:5678"
     environment:
       - DB_CONNECTION_STRING=mysql+aiomysql://${DB_USER}:${DB_PASSWORD}@db/${DB_NAME}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     networks:
       - app-network
   
+  test:
+    build: .
+    volumes:
+      - .:/app
+    command: ["pytest", "-s"]
+    profiles:
+      - test  
   db:
     image: mariadb:10.6.17-focal
     ports:
