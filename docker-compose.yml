@@ -12,9 +12,14 @@ services:
   
   test:
     build: .
+    
     volumes:
       - .:/app
-    command: ["pytest", "-s"]
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app
+    command: [] # allows me to pass directory app/tests/unit or app/tests/regression
+    entrypoint: ["pytest", "-s"]
     profiles:
       - test  
   db:

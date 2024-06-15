@@ -19,6 +19,28 @@ This project is a FastAPI-based application designed to manage "memories" using 
 - `crud/`: Defines CRUD operations for interacting with MariaDB (`mariadb_crud.py`) and Qdrant (`qdrant_crud.py`).
 - `routers/`: Organizes API routes into separate modules for MariaDB (`mariadb_router.py`) and Qdrant (`qdrant_router.py`).
 
+app
+├── crud
+│   ├── db_crud.py
+├── database
+├── dependencies.py
+├── main.py
+├── models
+│   ├── db_models.py
+├── prompts
+│   └── categorisation_prompt.md
+├── routers
+│   ├── router.py
+│   └── test_router.py
+├── schemas
+│   ├── db_schemas.py
+├── services
+│   ├── ai_service.py
+├── tests
+│   └── test_ai_service.py
+└── utils
+    ├── file_processor.py
+
 ### Infrastructure and Technologies
 
 - **Databases**: MariaDB for relational data and Qdrant for vector search (optional).
@@ -31,4 +53,13 @@ docker compose build && docker compose up
 
 ## test running 
 
+#### by hand 
 go to http://localhost:8000 and try test endpoint 
+
+#### automatic tests 
+
+run unit tests with command docker compose run test app/tests/unit
+
+!!! costs !!! 
+run regression tests with command docker compose run test app/tests/regression
+!!! costs !!! 

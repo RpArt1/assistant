@@ -32,7 +32,7 @@ class QueryModel(BaseModel):
 
 class ActionModel(BaseModel):
     type : TypeEnum = Field(default=TypeEnum.ACTION, description="classification type")
-    tool: List[ToolEnum] = Field(..., description="Tools related to the message")
+    tools: List[ToolEnum] = Field(..., description="Tools related to the message")
     content: str = Field(..., description="Content of the action")
 
 
@@ -96,7 +96,7 @@ def call_ai(message: str, system_prompt: str, function_list: list=None):
         if (response.function_call is not None and response.function_call.arguments is not None ):
             function_arguments = json.loads(response.function_call.arguments) 
             logging.info(f"Output from ai => {function_arguments}")
-            return function_arguments['arguments']
+            return function_arguments
         else: 
             logging.error("No function was choosen, response content: {response.content} ")
             raise Exception

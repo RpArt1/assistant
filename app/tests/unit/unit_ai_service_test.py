@@ -1,6 +1,6 @@
 import pytest
 import requests_mock
-from ..services.ai_service import categorise_user_query, function_list
+from ...services.ai_service import categorise_user_query, function_list
 import openai
 import logging
 from unittest.mock import patch, ANY
