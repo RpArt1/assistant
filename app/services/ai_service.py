@@ -7,24 +7,8 @@ from openai import OpenAI
 from os import environ
 import logging
 from ..utils import file_processor
+from ..utils.enums import TypeEnum, ToolEnum, TagEnum
 
-class ToolEnum (str, Enum):
-    MEMORY = "memory"
-    TODO = "todo"
-
-class TagEnum (str, Enum):
-    BRAIN = "brain"
-    PSYCHOLOGY = "psychology"
-    AI = "ai"
-    PYTHON = "python"
-    TODO = "todo"
-    MEMORY = "memory"
-    XIO = "Xio"
-
-#TYPES 
-class TypeEnum(str,  Enum):
-    QUERY = "query"
-    ACTION = "action"
 
 class QueryModel(BaseModel):
     type : TypeEnum = Field(default=TypeEnum.QUERY, description="classification type")
@@ -53,12 +37,20 @@ function_list = [
 ]
 
 
-def categorise_user_query(message: str ):
+def categorise_user_query(message: str, mock: bool ):
     """ First place where user query is processed and catagorized 
 
     Args:
         message (str): user message
+        mock (bool) : flag used for development purposes if call to external system is not required
     """
+    if mock: 
+
+        mock_expected_action_categorisation = {'type': 'action', 'tools': ['memory'], 'content': ['store attachment']}
+        mock_expected_query_categorisation = {'type': 'query', 'tags': ['ai']}
+
+        return mock_expected_action_categorisation
+
     try:
         logging.info(f"Query: {message}")
         categorisation_system_prompt = file_processor.process_file("../prompts/categorisation_prompt.md")

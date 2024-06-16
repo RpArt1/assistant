@@ -58,8 +58,15 @@ go to http://localhost:8000 and try test endpoint
 
 #### automatic tests 
 
-run unit tests with command docker compose run test app/tests/unit
+run unit tests with command: 
+
+```sh
+docker compose run test app/tests/unit
+``` 
 
 !!! costs !!! 
-run regression tests with command docker compose run test app/tests/regression
+run regression tests with command
+```sh
+ docker compose run test app/tests/regression
+```
 !!! costs !!! 

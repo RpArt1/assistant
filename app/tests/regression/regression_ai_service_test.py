@@ -1,11 +1,10 @@
 import unittest
 import openai
-from ...services.ai_service import categorise_user_query
-from dotenv import load_dotenv
-import os
+from app.services.ai_service import categorise_user_query
+from app.utils.env_settings import OPENAI_API_KEY
 
-load_dotenv()
-openai.api_key = os.getenv('OPENAI_API_KEY')
+
+openai.api_key = OPENAI_API_KEY
 
 
 # !!! EACH QUERY COSTS !!!
