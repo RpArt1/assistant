@@ -1,13 +1,13 @@
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 import logging
-from .routers import router
-from .routers import test_router
 import debugpy
 from fastapi.exceptions import RequestValidationError
-from qdrant_client import QdrantClient
 from qdrant_client.http.models import  VectorParams, Distance
-from .utils.env_settings import QDRANT_API_KEY, QDRANT_URL, QDRANT_COLLECTION
 
+
+from app.routers import router, test_router
+from app.utils.env_settings import  QDRANT_COLLECTION
+from app.dependencies import vector_store_client
 
 # logging configuration
 
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # Debuger 
 
 debugpy.listen(("0.0.0.0", 5678))
-debugpy.wait_for_client()
+# debugpy.wait_for_client() # ENABLE if you want app startup being dependant on debug startup
 
 # application 
 
@@ -40,23 +40,18 @@ app.include_router(test_router.router, prefix="/test", tags=["testing"])
 
 # Qdrant
 
-client = QdrantClient(
-    QDRANT_URL,
-    api_key=QDRANT_API_KEY,
-    prefer_grpc=True,
-)
 
 
 @app.on_event("startup")
 async def startup_event():
     
     # Check if the collection exists
-    collections = client.get_collections()
+    collections = vector_store_client.get_collections()
     if QDRANT_COLLECTION not in [collection.name for collection in collections.collections]:
         # Create collection if it does not exist
-        client.create_collection(
+        vector_store_client.create_collection(
             collection_name=QDRANT_COLLECTION,
-            vectors_config=VectorParams(size=4, distance=Distance.DOT)
+            vectors_config=VectorParams(size=1536, distance=Distance.DOT)
         )
         logger.info(f"Collection '{QDRANT_COLLECTION}' created.")
     else:

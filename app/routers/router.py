@@ -31,5 +31,5 @@ async def process_user_query(message: str, client_uuid: str = None,  file: Uploa
     # if user_query_categorisation contains filed tool and its value is "MEMORY" then save to database 
 
     if 'tools' in user_query_categorisation and ToolEnum.MEMORY.value in user_query_categorisation['tools']:
-        await store_memory(message, client_uuid, file, db)
+        await store_memory(message, file, client_uuid, db)
 
