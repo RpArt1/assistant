@@ -1,6 +1,6 @@
 import pytest
 import requests_mock
-from ...services.ai_service import categorise_user_query, function_list
+from app.services.ai_service import categorise_user_query, function_list
 import openai
 import logging
 from unittest.mock import patch, ANY
@@ -16,7 +16,7 @@ def test_classify_query(mock_call_ai):
     logging.info("Mock OpenAI API setup complete")
 
     # Call the categorise_user_query function with the user message
-    response = categorise_user_query(user_message)
+    response = categorise_user_query(user_message, False)
 
     mock_call_ai.assert_called_once_with(user_message, ANY, function_list)
     logging.info(f"response for test call for user query categorisation is {response}")

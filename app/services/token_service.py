@@ -1,7 +1,7 @@
-import openai
+from openai import OpenAI
 import string
 
-ENDPOINT = 'https://api.openai.com/v1/embeddings'
+EMBEDDING_MODEL = "text-embedding-3-small"
 
 
 def convert_into_tokens(document_content: str):
@@ -9,13 +9,8 @@ def convert_into_tokens(document_content: str):
     return get_embeddings(clean_document_content)
 
 def get_embeddings(document_content: str):
-    response = openai.Embedding.create(
-        input=document_content,
-        model="text-embedding-3-small" 
-    )
-
-    embeddings = response['data'][0]['embedding']
-    return embeddings
+    client = OpenAI()
+    return client.embeddings.create(input = [document_content], model=EMBEDDING_MODEL).data[0].embedding
 
 
 def clean_text(document_content: str) -> str:

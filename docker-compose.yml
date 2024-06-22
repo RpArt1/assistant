@@ -7,6 +7,9 @@ services:
     environment:
       - DB_CONNECTION_STRING=mysql+aiomysql://${DB_USER}:${DB_PASSWORD}@db/${DB_NAME}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - QDRANT_URL=${QDRANT_URL}
+      - QDRANT_PASSWORD=${QDRANT_PASSWORD}
+      - QDRANT_COLLECTION=${QDRANT_COLLECTION}
     networks:
       - app-network
   
@@ -41,12 +44,15 @@ services:
     ports:
       - "6333:6333"
     environment:
-      - VECTOR_DB_PASSWORD=${VECTOR_DB_PASSWORD}
+      - QDRANT_PASSWORD=${QDRANT_PASSWORD}
     networks:
       - app-network
+    volumes:
+      - qdrant-data:/qdrant/storage
 
 volumes:
   assistant_db-data:
+  qdrant-data:
 
 networks:
   app-network:
