@@ -13,7 +13,9 @@ from app.dependencies import vector_store_client
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s %(levelname)s: %(message)s',
+    # format='%(asctime)s %(levelname)s: %(message)s',
+    format='%(levelname)s:       %(asctime)s:        %(message)s'
+
 )
 logger = logging.getLogger(__name__)
 

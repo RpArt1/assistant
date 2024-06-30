@@ -8,6 +8,7 @@ import re
 import uuid
 from .token_service import convert_into_embeddings, EmbeddingError
 from .vector_store_service import save_document_to_vector_store
+from .taging_service import tag_document, TagingError
 
 async def store_memory(message: str, file: UploadFile, client_uuid: str = None, db: AsyncSession = Depends(get_db_session)):    
     try:
@@ -48,23 +49,17 @@ async def create_memory(message: str, file: UploadFile, client_uuid: str = None,
         )
         process_uuid(new_memory, client_uuid)
 
-        tag_document(new_memory)
-
+        tags = tag_document(new_memory.content, False)
+        new_memory.tags = tags
         return new_memory
 
     except FileReadError as fre:
-        logging.error(f"Cannot store memory {str(e)}")
+        logging.error(f"Cannot store memory Error code: {fre.error_code} message: {fre.message}")
     except EmbeddingError as er:
-        logging.error(f"Cannot store memory {str(e)}")
+        logging.error(f"Cannot store memory Error code: {er.error_code} message: {er.message}")
     except TagingError as te: 
-        logging.error(f"Cannot store memory {str(e)}")
+        logging.error(f"Cannot store memory Error code: {te.error_code} message: {te.message}")
 
-
-def tag_document(memory: MemoryCreate) -> None: 
-    try:
-        memory.tags =  ["tag1", "tag2"]
-    except Exception as e: 
-        raise TagingError("Error while taging file: {e}", 1002)
 
 def process_uuid(memory: MemoryCreate, client_uuid : str) -> None: 
      if client_uuid != None and is_uuid_valid(client_uuid):
@@ -107,14 +102,6 @@ class FileReadError(Exception):
        error code = 1000
     """
 
-    def __init__(self, message, error_code):
-        super().__init__(message)
-        self.error_code = error_code
-
-class TagingError(Exception):
-    """Exception raised for errors in the document taging process.
-       error code = 1002 
-    """
     def __init__(self, message, error_code):
         super().__init__(message)
         self.error_code = error_code

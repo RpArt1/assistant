@@ -1,24 +1,18 @@
 import logging
 from pathlib import Path
 
-FILE_DIRECTORY = "prompts"
-FILE = "categorisation_prompt.md"
+DEFAULT_FILE_DIRECTORY = "prompts"
 
-def process_file(file, placeholders: dict=None):
+def process_file(file_name: str,  placeholders: dict = None,  file_dir: str = DEFAULT_FILE_DIRECTORY) -> str:
     script_dir = Path(__file__).parent 
-    file_path = script_dir.parent / FILE_DIRECTORY / FILE
+    file_path = script_dir.parent / file_dir / file_name
 
     try:
         with open(file_path, "r") as file:
             text = file.read()
-        placeholders = {
-            "assistant_name" : "Xian",
-            "date" : "2024-05-01",
-            "user_name" : "Yan"
-
-        }
-        formatted_text = text.format(**placeholders)
-        return formatted_text
+        if(placeholders):
+            text = text.format(**placeholders)
+        return text
     
     except FileNotFoundError:
         logging.error(f"File not found - {file}")

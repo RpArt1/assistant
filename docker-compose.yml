@@ -21,6 +21,7 @@ services:
     working_dir: /app
     environment:
       - PYTHONPATH=/app
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     command: [] # allows me to pass directory app/tests/unit or app/tests/regression
     entrypoint: ["pytest", "-s"]
     profiles:
