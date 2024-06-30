@@ -1,11 +1,13 @@
-from ..dependencies import get_db_session
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, UploadFile, Depends
+from io import BytesIO
+
+from ..utils import file_processor
 from ..services.ai_service import categorise_user_query
 from ..services.file_storing_service import store_memory
-from fastapi import APIRouter, UploadFile, Depends
 from ..utils.enums import ToolEnum
-from io import BytesIO
+from ..dependencies import get_db_session
 
 
 router = APIRouter()
@@ -21,15 +23,29 @@ async def process_user_query(message: str, client_uuid: str = None,  file: Uploa
         file (UploadFile, optional): file to be uploaded to memory . Defaults to None.
         db (AsyncSession, optional): databse session. Defaults to Depends(get_db_session).
     """
-    use_mock = True
+    use_mock = False
     user_query_categorisation = categorise_user_query(message, use_mock)
     if use_mock is True: 
-        file_content = b"Sample file content"
-        file_like = BytesIO(file_content)
-        file = UploadFile(filename="test_file.txt", file=file_like)
+        file = mock_file()
+        
 
     # if user_query_categorisation contains filed tool and its value is "MEMORY" then save to database 
 
     if 'tools' in user_query_categorisation and ToolEnum.MEMORY.value in user_query_categorisation['tools']:
         await store_memory(message, file, client_uuid, db)
 
+
+
+def mock_file(): 
+    ## short file
+    file_name = "mock.txt"
+    file_content = "Sample file content"
+    ## for tagging
+    file_name = "taging-test-document.txt"
+    file_content =  file_processor.process_file(file_name, None, "misc")
+
+
+    byte_file_content = file_content.encode('utf-8')
+
+    file_bytes_io = BytesIO(byte_file_content)
+    return UploadFile(filename=file_name, file=file_bytes_io)

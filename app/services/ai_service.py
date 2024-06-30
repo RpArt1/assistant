@@ -45,15 +45,18 @@ def categorise_user_query(message: str, mock: bool ):
         mock (bool) : flag used for development purposes if call to external system is not required
     """
     if mock: 
-
-        mock_expected_action_categorisation = {'type': 'action', 'tools': ['memory'], 'content': ['store attachment']}
-        mock_expected_query_categorisation = {'type': 'query', 'tags': ['ai']}
-
-        return mock_expected_action_categorisation
+        return mock_response()
 
     try:
         logging.info(f"Query: {message}")
-        categorisation_system_prompt = file_processor.process_file("../prompts/categorisation_prompt.md")
+
+        placeholders = {
+            "assistant_name" : "Xian",
+            "date" : "2024-05-01",
+            "user_name" : "Yan"
+
+        }
+        categorisation_system_prompt = file_processor.process_file("../prompts/categorisation_prompt.md", placeholders)
         user_query_categorisation = call_ai(message, categorisation_system_prompt, function_list)
         logging.info(f"Query categorization : {user_query_categorisation}")
         return user_query_categorisation
@@ -83,6 +86,7 @@ def call_ai(message: str, system_prompt: str, function_list: list=None):
             function_call="auto"
         )
         # fetch data from output 
+
         response = response.choices[0].message
 
         if (response.function_call is not None and response.function_call.arguments is not None ):
@@ -97,4 +101,8 @@ def call_ai(message: str, system_prompt: str, function_list: list=None):
         raise
 
 
+def mock_response(): 
+    mock_expected_action = {'type': 'action', 'tools': ['memory'], 'content': ['store attachment']}
+    mock_expected_query = {'type': 'query', 'tags': ['ai']}
 
+    return mock_expected_action
