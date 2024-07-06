@@ -1,0 +1,30 @@
+This document is a guide to the fundamental concepts of using Document AI. You should read this page before proceeding to any other documentation or quickstarts.
+
+Automate document processing workflows
+Businesses all over the world rely heavily on documents to store and convey information. This information often needs to be digitized for it to become useful. However, this is usually accomplished through time-intensive, manual processes.
+
+For example:
+
+Digitizing books for e-readers.
+Processing medical intake forms at doctor's offices.
+Parsing receipts and invoices for expense report validation.
+Authenticating identity based on ID cards.
+Extracting income information from tax forms for approving loans.
+Understanding contracts for key business agreement terms.
+Each of these workflows involve getting the raw text from documents, then extracting specific text from that which corresponds to the data needed (the fields or entities). However, each document type has a different structure and layout, and the pattern of fields vary depending on the specific use case.
+
+Document AI components
+Document AI is a document processing and understanding platform that takes unstructured data from documents and transforms it into structured data (specific fields, suitable for a database), making it easier to understand, analyze, and consume.
+
+Document AI is built on top of products within Vertex AI with generative AI to help you create scalable, end-to-end, cloud-based document processing applications without specialized machine learning expertise.
+
+Using Document AI, you can:
+
+Digitize documents using OCR to get text, layout, and various add ons such as image quality detection (for readability) and deskewing (fully automatic).
+Extract text and layout information, from document files and normalize entities.
+Identify key-value pairs (kvp) in structured forms and simple tables. For example: Name: Jill Smith is a kvp.
+Classify document types to drive downstream processes such as extraction and storage.
+Split and classify documents by type. For example, a PDF file with multiple real documents).
+Prepare datasets to be used in fine-tuning and model evaluations using auto-labeling, schema management, and dataset management features such as document and prediction review.
+Integrate it with products like Cloud Storage, BigQuery, and Vertex AI Search to help you store, search, organize, govern, and analyze documents and metadata.
+This diagram illustrates all of the key document processing steps that are supported by Document AI and how they can connect to each other.

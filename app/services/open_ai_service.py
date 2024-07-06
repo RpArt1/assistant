@@ -40,6 +40,29 @@ def call_ai(message: str, system_prompt: str, function_list: list=None):
         raise OpenAiError(f"Call to ai ended up with failure, details: {e},")
 
 
+def get_message_from_ai(message: str, system_prompt: str): 
+    """Function responsible for direct comunication to openai 
+
+    Args:
+        message (str): user message
+        system_prompt (str): system prompt that will be used 
+    """
+
+    try:
+        client = OpenAI(api_key=environ.get('OPENAI_API_KEY'))
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": message}
+            ],
+        )
+        response = response.choices[0].message.content
+        return response
+     
+    except Exception as e: 
+        raise OpenAiError(f"Call to ai ended up with failure, details: {e},")
+
 class OpenAiError(Exception):
     """Exception raised for errors conected to open ai api
        error code = 1003
