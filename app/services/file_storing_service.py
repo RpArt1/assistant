@@ -5,17 +5,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies import get_db_session
 from app.crud.db_crud import save_memory
 import re
-import uuid
 from .token_service import convert_into_embeddings, EmbeddingError
 from .vector_store_service import save_document_to_vector_store
 from .taging_service import tag_document, TagingError
+
 
 async def store_memory(message: str, file: UploadFile, client_uuid: str = None, db: AsyncSession = Depends(get_db_session)):    
     
     # FIXME #25 remove client uuid usage nad creation from this class 
   
     try:
-
+   
         memory_document = await create_memory(message, file, client_uuid)
         embedded_document = convert_into_embeddings(memory_document.content)
 
@@ -94,7 +94,7 @@ async def get_file_data(file: UploadFile = None) -> str:
         raise FileReadError("Error while reading file: {e}", 1000)
 
 
-def is_uuid_valid(uuid: str ) -> bool: 
+def is_uuid_valid(uuid: str ) -> bool:
     # FIXME #25 remove client uuid usage nad creation from this class 
 
     regex = re.compile('^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z', re.I)

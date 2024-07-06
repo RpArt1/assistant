@@ -38,21 +38,19 @@ async def process_user_query(message: str, conversation_id: str = None,  file: U
     elif user_query_categorisation.get('type') == TypeEnum.QUERY.value: 
         # prepare answer for user 
         conversation_uuid = resolve_conversation_id(conversation_id)
-        reply_user(message, conversation_uuid)
+        await reply_user(message, conversation_uuid ,db)
 
 
 def resolve_conversation_id(conversation_uuid : str) -> None: 
     if conversation_uuid != None and is_uuid_valid(conversation_uuid):
-        return conversation_uuid
+        return uuid.UUID(conversation_uuid)
     else:
-        return str(uuid.uuid4())
-        
+        return uuid.uuid4()
 
 def is_uuid_valid(uuid: str ) -> bool: 
     regex = re.compile('^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z', re.I)
     match = regex.match(uuid)
     return bool(match)
-
 
 
 def mock_file(): 
