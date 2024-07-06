@@ -1,4 +1,5 @@
 from typing import List
+from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Literal
 import json
@@ -49,10 +50,11 @@ def categorise_user_query(message: str, mock: bool ):
 
     try:
         logging.info(f"Query: {message}")
+        current_date = (datetime.now()).strftime("%Y-%m-%d")
 
         placeholders = {
             "assistant_name" : "Xian",
-            "date" : "2024-05-01",
+            "date" : current_date,
             "user_name" : "Yan"
 
         }

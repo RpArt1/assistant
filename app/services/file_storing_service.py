@@ -11,6 +11,9 @@ from .vector_store_service import save_document_to_vector_store
 from .taging_service import tag_document, TagingError
 
 async def store_memory(message: str, file: UploadFile, client_uuid: str = None, db: AsyncSession = Depends(get_db_session)):    
+    
+    # FIXME #25 remove client uuid usage nad creation from this class 
+  
     try:
 
         memory_document = await create_memory(message, file, client_uuid)
@@ -47,6 +50,7 @@ async def create_memory(message: str, file: UploadFile, client_uuid: str = None,
                 active=True,
                 source=file_name
         )
+        # FIXME #25 remove client uuid usage nad creation from this class 
         process_uuid(new_memory, client_uuid)
 
         tags = tag_document(new_memory.content, False)
@@ -62,6 +66,10 @@ async def create_memory(message: str, file: UploadFile, client_uuid: str = None,
 
 
 def process_uuid(memory: MemoryCreate, client_uuid : str) -> None: 
+     
+    # FIXME #25 remove client uuid usage nad creation from this class 
+    
+
      if client_uuid != None and is_uuid_valid(client_uuid):
             memory.uuid = client_uuid
 
@@ -85,7 +93,10 @@ async def get_file_data(file: UploadFile = None) -> str:
     except Exception as e:
         raise FileReadError("Error while reading file: {e}", 1000)
 
+
 def is_uuid_valid(uuid: str ) -> bool: 
+    # FIXME #25 remove client uuid usage nad creation from this class 
+
     regex = re.compile('^[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}\Z', re.I)
     match = regex.match(uuid)
     return bool(match)
