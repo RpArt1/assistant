@@ -16,3 +16,11 @@ class Memory(Base):
     active = Column(Boolean, default=True)
     source = Column(String(255))
     created_at = Column(DateTime, default=func.now())
+
+class Conversation(Base):
+    __tablename__ = 'conversation'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    uuid = Column(CHAR(36), nullable=False)
+    user_message = Column(String(255))
+    chat_response = Column(String(255))
+    created_at = Column(DateTime, default=func.now())
