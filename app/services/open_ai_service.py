@@ -40,7 +40,7 @@ def call_ai(message: str, system_prompt: str, function_list: list=None):
         raise OpenAiError(f"Call to ai ended up with failure, details: {e},")
 
 
-def get_message_from_ai(message: str, system_prompt: str): 
+def get_message_from_ai(conversation_with_system_prompt: list): 
     """Function responsible for direct comunication to openai 
 
     Args:
@@ -52,10 +52,7 @@ def get_message_from_ai(message: str, system_prompt: str):
         client = OpenAI(api_key=environ.get('OPENAI_API_KEY'))
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": message}
-            ],
+            messages=conversation_with_system_prompt
         )
         response = response.choices[0].message.content
         return response

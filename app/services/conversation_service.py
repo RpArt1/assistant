@@ -8,6 +8,7 @@ from ..services import open_ai_service
 from ..crud import conversation_crud
 from ..dependencies import get_db_session
 from ..schemas.conversation_schema import ConversationSchema
+from app.services import conversation_history_service
 
 
 async def reply_user(user_message:str, conversation_id:str, db: AsyncSession = Depends(get_db_session)) -> str:
@@ -21,7 +22,12 @@ async def reply_user(user_message:str, conversation_id:str, db: AsyncSession = D
                 "user_name" : "Yan"
         }
         conversation_system_prompt = file_processor.process_file("../prompts/conversation_prompt.md", placeholders)
-        response = open_ai_service.get_message_from_ai(user_message, conversation_system_prompt)
+        conversations_history = await conversation_history_service.fetch_conversations_by_uuid(conversation_id, db)
+
+        conversations_history.append({"role": "user", "content": user_message})
+        conversation_with_system_prompt = [{"role": "system", "content": conversation_system_prompt}] + conversations_history
+
+        response = open_ai_service.get_message_from_ai(conversation_with_system_prompt)
         await save_conversation(conversation_id, user_message, response, db)
         logging.info(f"{conversation_id} ==> Reply for user : {response}")
         return response
