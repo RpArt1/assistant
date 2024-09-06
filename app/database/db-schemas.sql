@@ -25,3 +25,7 @@ CREATE TABLE conversation (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 );
+
+ALTER TABLE conversation
+MODIFY COLUMN user_message TEXT,
+MODIFY COLUMN chat_response TEXT;
