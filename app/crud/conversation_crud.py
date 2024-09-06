@@ -1,4 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy import asc
 import logging
 
 from ..schemas.conversation_schema import ConversationSchema
@@ -20,3 +22,11 @@ async def save_conversation(conversation: ConversationSchema, db: AsyncSession) 
     
     except Exception as e: 
         logging.error(e)
+
+async def fetch_conversations_by_uuid(uuid: str, db: AsyncSession) -> list[Conversation]:
+    try:
+        conversations = await db.execute(select(Conversation).where(Conversation.uuid == uuid).order_by(asc(Conversation.created_at)))
+        return conversations
+    except Exception as e:
+        logging.error(f"Error fetching conversations with uuid {uuid}: {e}")
+        return []
