@@ -10,7 +10,17 @@ from ..dependencies import get_db_session
 from ..schemas.conversation_schema import ConversationSchema
 
 
-async def fetch_conversations_by_uuid(uuid: str, db ) -> tuple: 
+async def fetch_conversations_by_uuid(uuid: str, db ) -> list: 
+    """fetch convresations based on uuid of converasation
+
+    Args:
+        uuid (str): _description_
+        db (_type_): _description_
+
+    Returns:
+        list: json list of conversations or empty list 
+    """
+
     try: 
         conversation_list = await conversation_crud.fetch_conversations_by_uuid(uuid, db)
         conversations = conversation_list.scalars().all()
