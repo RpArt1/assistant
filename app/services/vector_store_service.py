@@ -1,12 +1,44 @@
 import logging
 from qdrant_client.http.models import PointStruct
 from datetime import datetime
+from qdrant_client.http.models import Filter, FieldCondition, MatchAny, SearchRequest
 
 from app.utils.env_settings import  QDRANT_COLLECTION
 from app.dependencies import vector_store_client
 
 
-
+def fetch_documents_uuids_from_vector_store(embedded_query: list, tags: list, top_k: int = 5):
+    try:
+        tag_filter = Filter(
+            must=[
+                FieldCondition(
+                    key="tags.tags",
+                    match=MatchAny(any=tags) 
+                )
+            ]
+        )
+        
+             
+        search_results = vector_store_client.search(
+            collection_name=QDRANT_COLLECTION,
+            query_vector=embedded_query,
+            query_filter=tag_filter,
+            limit=top_k
+        )
+        
+        
+        uuids = [result.id for result in search_results]
+                
+        if not uuids:
+            logging.info("No matching entries found for the query and tags.")
+            return None
+        
+        logging.info(f"Found matching documents with UUIDs: {uuids}")
+        return uuids
+    
+    except Exception as e:
+        logging.error(f"Error during fetching from vector store: {e}")
+        return None
 
 
 def save_document_to_vector_store(embedded_document: list, file_name: str, uuid_str : str, tags: list) :

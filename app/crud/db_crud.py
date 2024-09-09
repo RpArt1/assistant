@@ -1,10 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from ..models.db_models import Memory
-from ..schemas.db_schemas import MemoryCreate
 from typing import Any
 import json
 import logging
+
+
+from ..models.db_models import Memory
+from ..schemas.db_schemas import MemoryCreate, MemoryResponse
 
 async def save_memory(db: AsyncSession, memory: MemoryCreate) -> Memory:
     try:
@@ -26,3 +28,31 @@ async def save_memory(db: AsyncSession, memory: MemoryCreate) -> Memory:
      
     except Exception as e: 
         logging.error(e)
+
+
+async def get_memories_by_uuids(uuid_list: list[str], db: AsyncSession) -> list[MemoryResponse]:
+    try:
+        query = select(Memory).where(Memory.uuid.in_(uuid_list))
+        result = await db.execute(query)
+        memories = result.scalars().all()
+
+        memory_responses = [
+            MemoryResponse(
+                id=memory.id,
+                uuid=memory.uuid,
+                name=memory.name,
+                content=memory.content,
+                reflection=memory.reflection,
+                tags=json.loads(memory.tags)["tags"] if isinstance(memory.tags, str) else memory.tags["tags"],  # Extract the list of tags
+                active=memory.active,
+                source=memory.source,
+                created_at=memory.created_at
+            )
+            for memory in memories
+        ]
+        
+        return memory_responses
+
+    except Exception as e:
+        logging.error(e)
+        return []
