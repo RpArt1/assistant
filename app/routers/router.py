@@ -38,7 +38,7 @@ async def process_user_query(message: str, conversation_id: str = None,  file: U
     elif user_query_categorisation.get('type') == TypeEnum.QUERY.value: 
         # prepare answer for user 
         conversation_uuid = resolve_conversation_id(conversation_id)
-        await reply_user(message, str(conversation_uuid), db)
+        await reply_user(message, user_query_categorisation.get('tags'), str(conversation_uuid), db)
 
 
 def resolve_conversation_id(conversation_uuid : str) -> None: 

@@ -7,15 +7,15 @@ from ..utils import file_processor
 from ..crud import conversation_crud
 from ..dependencies import get_db_session
 from ..schemas.conversation_schema import ConversationSchema
-from app.services import conversation_history_service, token_service, open_ai_service
+from app.services import conversation_history_service, token_service, open_ai_service, vector_store_service
+from ..crud import db_crud
 
 
-
-async def reply_user(user_message:str, conversation_id:str, db: AsyncSession = Depends(get_db_session)) -> str:
+async def reply_user(user_message:str, tags:list, conversation_id:str, db: AsyncSession = Depends(get_db_session)) -> str:
     try: 
         logging.info(f"{conversation_id} ==> User posted message: {user_message}")
         
-        prompt = await build_prompt(user_message, conversation_id, db)
+        prompt = await build_prompt(user_message, tags, conversation_id, db)
       
         response = open_ai_service.get_message_from_ai(prompt)
 
@@ -32,7 +32,7 @@ async def reply_user(user_message:str, conversation_id:str, db: AsyncSession = D
         logging.error(f"Error occured when generation response to user {e}")
 
 
-async def build_prompt(user_message: str, conversation_id:str, db):
+async def build_prompt(user_message: str, tags:list, conversation_id:str, db):
 
     """Build prompt consisting of system prompt,  current query from user and if applicaple conversation history 
 
@@ -47,19 +47,25 @@ async def build_prompt(user_message: str, conversation_id:str, db):
         "user_name" : "Yan"
     }
     
-    conversations_list = get_conversation_history(conversation_id, db)
+    conversations_list = await get_conversation_history(conversation_id, db)
 
     system_prompt = file_processor.process_file("../prompts/conversation_prompt.md", placeholders)
-
-    conversation_with_system_prompt = [{"role": "system", "content": system_prompt}] + conversations_list 
-
-    conversations_list.append({"role": "user", "content": user_message})
-
     # section for ltm 
     ## change user message to tokens 
-    embedded_user_query = token_service.get_embeddings(user_message)
     
-    ## send query with tags to vectore store service for retreival 
+    ## send query with tags to vectore store service for retreival
+    long_term_memory_entry = ""
+    if (len(tags) > 0):
+        long_term_memory= await search_long_term_memory(user_message, tags, db)
+        long_term_memory_entry = [{"role": "assistant", "content": long_term_memory}]
+
+    conversation_with_system_prompt = [{"role": "system", "content": system_prompt}] + long_term_memory_entry +  conversations_list 
+
+    conversation_with_system_prompt.append({"role": "user", "content": user_message})
+
+  
+    logging.debug(f"Full prompt {conversation_with_system_prompt}")
+    logging.info(f"Prompt without system message:  {conversation_with_system_prompt[2:]}")
 
     return conversation_with_system_prompt
 
@@ -74,6 +80,29 @@ async def get_conversation_history(conversation_id, db):
     else:
         logging.info(f"No converastions found")
         return []
+
+
+async def search_long_term_memory(user_message:str, tags: list, db:AsyncSession):
+    """embbed user query and search similary in vector store limiting search to region specified in tags
+
+    Args:
+        user_message (str): message
+        tags (list): tags
+
+    Returns:
+        _type_: ???? TODO ARTUR
+    """
+
+    embedded_user_query = token_service.get_embeddings(user_message)
+    docuemnts_uuids = vector_store_service.fetch_documents_uuids_from_vector_store(embedded_user_query, tags, 3)
+    # find entries in db based on returned uuids 
+    memories = await db_crud.get_memories_by_uuids(docuemnts_uuids, db)
+    knowledge_base = ""
+    for memory in memories:
+        knowledge_base+=(memory.content)
+    # concat documents into one string 
+    # logging.info(f"Knowledge based used for answering: {knowledge_base}")
+    return knowledge_base
 
 
 async def save_conversation(conversation_id: str, user_message: str, response: str, db: AsyncSession ) -> None: 
