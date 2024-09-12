@@ -17,13 +17,13 @@ def call_ai(message: str, system_prompt: str, function_list: list=None):
     try:
         client = OpenAI(api_key=environ.get('OPENAI_API_KEY'))
         response = client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": message}
             ],
             functions=function_list,
-            function_call="auto"
+            function_call={"name": "tag-document"}
         )
         # fetch data from output 
         response = response.choices[0].message
@@ -33,7 +33,7 @@ def call_ai(message: str, system_prompt: str, function_list: list=None):
             logging.info(f"Output from ai => {function_arguments}")
             return function_arguments
         else: 
-            logging.debug(f"Message returned : {response} ")
+            logging.info(f"Message returned : {response} ")
             raise OpenAiError(f"No fuction was called during openai call")
 
     except Exception as e: 

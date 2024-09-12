@@ -12,7 +12,7 @@ def fetch_documents_uuids_from_vector_store(embedded_query: list, tags: list, to
         tag_filter = Filter(
             must=[
                 FieldCondition(
-                    key="tags.tags",
+                    key="tags.pre_defined_tags",
                     match=MatchAny(any=tags) 
                 )
             ]

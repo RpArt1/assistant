@@ -11,7 +11,6 @@ from .taging_service import tag_document, TagingError
 
 
 async def store_memory(message: str, file: UploadFile, client_uuid: str = None, db: AsyncSession = Depends(get_db_session)):    
-    
     # FIXME #25 remove client uuid usage nad creation from this class 
   
     try:

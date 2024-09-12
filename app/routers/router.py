@@ -33,12 +33,13 @@ async def process_user_query(message: str, conversation_id: str = None,  file: U
         
 
     # if user_query_categorisation contains filed tool and its value is "MEMORY" then save to database 
-    if user_query_categorisation.get('tools') == ToolEnum.MEMORY.value:
+    if user_query_categorisation.get('tools') != None and user_query_categorisation.get('tools')[0] == ToolEnum.MEMORY.value:
         await store_memory(message, file, conversation_id, db)
     elif user_query_categorisation.get('type') == TypeEnum.QUERY.value: 
+        tags = normalize_tags(user_query_categorisation.get('tags'))
         # prepare answer for user 
         conversation_uuid = resolve_conversation_id(conversation_id)
-        await reply_user(message, user_query_categorisation.get('tags'), str(conversation_uuid), db)
+        await reply_user(message,tags, str(conversation_uuid), db)
 
 
 def resolve_conversation_id(conversation_uuid : str) -> None: 
@@ -52,6 +53,8 @@ def is_uuid_valid(uuid: str ) -> bool:
     match = regex.match(uuid)
     return bool(match)
 
+def normalize_tags(tags):
+    return [tag.lower() for tag in tags]
 
 def mock_file(): 
     ## short file

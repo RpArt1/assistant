@@ -43,10 +43,10 @@ async def get_memories_by_uuids(uuid_list: list[str], db: AsyncSession) -> list[
                 name=memory.name,
                 content=memory.content,
                 reflection=memory.reflection,
-                tags=json.loads(memory.tags)["tags"] if isinstance(memory.tags, str) else memory.tags["tags"],  # Extract the list of tags
-                active=memory.active,
+                tags=(json.loads(memory.tags) if isinstance(memory.tags, str) else memory.tags).get("pre_defined_tags", []),
                 source=memory.source,
-                created_at=memory.created_at
+                created_at=memory.created_at,
+                active=memory.active if memory.active is not None else False,
             )
             for memory in memories
         ]
