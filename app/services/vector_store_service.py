@@ -7,7 +7,7 @@ from app.utils.env_settings import  QDRANT_COLLECTION
 from app.dependencies import vector_store_client
 
 
-def fetch_documents_uuids_from_vector_store(embedded_query: list, tags: list, top_k: int = 5):
+def fetch_documents_uuids_from_vector_store(embedded_query: list, tags: list, top_k: int = 2):
     try:
         tag_filter = Filter(
             must=[
@@ -23,14 +23,15 @@ def fetch_documents_uuids_from_vector_store(embedded_query: list, tags: list, to
             collection_name=QDRANT_COLLECTION,
             query_vector=embedded_query,
             query_filter=tag_filter,
-            limit=top_k
+            limit=top_k,
+            score_threshold=0.3
         )
         
         
         uuids = [result.id for result in search_results]
                 
         if not uuids:
-            logging.info("No matching entries found for the query and tags.")
+            logging.info("QDRANT: No matching entries found for the query and tags.")
             return None
         
         logging.info(f"Found matching documents with UUIDs: {uuids}")

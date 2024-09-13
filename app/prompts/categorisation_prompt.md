@@ -12,9 +12,8 @@ I will clasify a message from the user saving its type as 'query' or an 'action'
 - If unsure whether it's an action or a query, choose \"Query\" as type with empty tags.
 
 #### tags
-- brain
-- psychology
-- ai
+- psychology (mental models, gallup, themes)
+- ai (Apply when the user asks about AI-related concepts, questions about AI, LLMs, rag, qdrant)
 - python 
 - todo
 - {user_name} 

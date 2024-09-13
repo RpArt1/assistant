@@ -28,6 +28,9 @@ async def process_user_query(message: str, conversation_id: str = None,  file: U
     """
     use_mock = False
     user_query_categorisation = categorise_user_query(message, use_mock)
+    if user_query_categorisation is None:
+        logging.error("quitting")
+        quit()
     if use_mock is True: 
         file = mock_file()
         

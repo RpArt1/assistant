@@ -47,6 +47,7 @@ async def build_prompt(user_message: str, tags:list, conversation_id:str, db):
         "user_name" : "Yan"
     }
     
+
     conversations_list = await get_conversation_history(conversation_id, db)
 
     system_prompt = file_processor.process_file("../prompts/conversation_prompt.md", placeholders)
@@ -54,7 +55,7 @@ async def build_prompt(user_message: str, tags:list, conversation_id:str, db):
     ## change user message to tokens 
     
     ## send query with tags to vectore store service for retreival
-    long_term_memory_entry = ""
+    long_term_memory_entry = []
     if (len(tags) > 0):
         long_term_memory= await search_long_term_memory(user_message, tags, db)
         long_term_memory_entry = [{"role": "assistant", "content": long_term_memory}]
@@ -70,13 +71,14 @@ async def build_prompt(user_message: str, tags:list, conversation_id:str, db):
     return conversation_with_system_prompt
 
 
-async def get_conversation_history(conversation_id, db):
+async def get_conversation_history(conversation_id: str, db) -> list:
     searched_conversations_list = await conversation_history_service.fetch_conversations_by_uuid(conversation_id, db)
 
     if(len(searched_conversations_list) > 0 ): 
 
         logging.info(f"Adding: {len(searched_conversations_list)} conversations to prompt")
         conversations_list = searched_conversations_list
+        return conversations_list
     else:
         logging.info(f"No converastions found")
         return []
@@ -94,13 +96,16 @@ async def search_long_term_memory(user_message:str, tags: list, db:AsyncSession)
     """
 
     embedded_user_query = token_service.get_embeddings(user_message)
-    docuemnts_uuids = vector_store_service.fetch_documents_uuids_from_vector_store(embedded_user_query, tags, 3)
+    docuemnts_uuids = vector_store_service.fetch_documents_uuids_from_vector_store(embedded_user_query, tags)
     # find entries in db based on returned uuids 
+    if docuemnts_uuids is None or len(docuemnts_uuids) == 0: 
+        return []
+    
     memories = await db_crud.get_memories_by_uuids(docuemnts_uuids, db)
+    logging.info(f"Following documents will be used to generate response : {[obj.source for obj in memories]}")
     knowledge_base = ""
     for memory in memories:
         knowledge_base+=(memory.content)
-    # concat documents into one string 
     # logging.info(f"Knowledge based used for answering: {knowledge_base}")
     return knowledge_base
 
