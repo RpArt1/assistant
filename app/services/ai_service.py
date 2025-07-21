@@ -38,7 +38,7 @@ function_list = [
 ]
 
 
-def categorise_user_query(message: str, mock: bool ):
+def categorise_user_query(message: str, mock: bool = False ):
     """ First place where user query is processed and catagorized 
 
     Args:
@@ -55,7 +55,7 @@ def categorise_user_query(message: str, mock: bool ):
         placeholders = {
             "assistant_name" : "Xian",
             "date" : current_date,
-            "user_name" : "Yan"
+            "user_name" : "Andrew"
 
         }
         categorisation_system_prompt = file_processor.process_file("../prompts/categorisation_prompt.md", placeholders)
@@ -64,6 +64,7 @@ def categorise_user_query(message: str, mock: bool ):
         return user_query_categorisation
     except (FileNotFoundError, KeyError, Exception) as e:
         logging.error(f"Query cannot be categorised")
+        return None
 
 
 def call_ai(message: str, system_prompt: str, function_list: list=None): 
