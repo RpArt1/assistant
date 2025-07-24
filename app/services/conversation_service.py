@@ -12,22 +12,18 @@ from ..crud import db_crud
 
 
 async def reply_user(user_message:str, tags:list, conversation_id:str, db: AsyncSession = Depends(get_db_session)) -> str:
-    try: 
-        logging.info(f"{conversation_id} ==> User posted message: {user_message}")
-        
+
+    logging.info(f"{conversation_id} ==> User posted message: {user_message}")
+
+    try:       
         prompt = await build_prompt(user_message, tags, conversation_id, db)
-      
         response = open_ai_service.get_message_from_ai(prompt)
-
         await save_conversation(conversation_id, user_message, response, db)
-
         logging.info(f"{conversation_id} ==> Reply for user : {response}")
-
         return response
     
     except ValueError as e:
         logging.error(f"Error occured when generation response to user {e}")
-
     except Exception as e:
         logging.error(f"Error occured when generation response to user {e}")
 
@@ -42,9 +38,9 @@ async def build_prompt(user_message: str, tags:list, conversation_id:str, db):
         db (_type_): _description_
     """
     placeholders = {
-        "assistant_name" : "Xian",
+        "assistant_name" : "X",
         "date" : (datetime.now()).strftime("%Y-%m-%d"),
-        "user_name" : "Yan"
+        "user_name" : "Y"
     }
     
 
@@ -71,18 +67,34 @@ async def build_prompt(user_message: str, tags:list, conversation_id:str, db):
     return conversation_with_system_prompt
 
 
-async def get_conversation_history(conversation_id: str, db) -> list:
-    searched_conversations_list = await conversation_history_service.fetch_conversations_by_uuid(conversation_id, db)
-
-    if(len(searched_conversations_list) > 0 ): 
-
-        logging.info(f"Adding: {len(searched_conversations_list)} conversations to prompt")
-        conversations_list = searched_conversations_list
-        return conversations_list
-    else:
-        logging.info(f"No converastions found")
-        return []
-
+async def get_conversation_history(conversation_id: str, db: AsyncSession) -> list:
+    """Retrieve conversation history for a given conversation ID.
+    
+    Args:
+        conversation_id: The unique identifier for the conversation
+        db: Database session for async operations
+        
+    Returns:
+        List of conversation dictionaries with 'role' and 'content' keys,
+        or empty list if no conversations found
+    """
+    
+    if not conversation_id or not isinstance(conversation_id, str):
+        raise ValueError("conversation_id must be a non-empty string")
+    if not conversation_id.strip():
+        raise ValueError("conversation_id cannot be empty or whitespace")
+    
+    try: 
+        conversation_history = await conversation_history_service.fetch_conversations_by_uuid(conversation_id, db)
+        if conversation_history: 
+            logging.info(f"Adding: {len(conversation_history)} conversations to prompt")
+            return conversation_history
+        else:
+            logging.info(f"Conversation {conversation_id}: No conversation history found")
+            return []
+    except Exception as e: 
+        logging.error(f"Failed to fetch conversation history for {conversation_id}: {e}")
+        raise
 
 async def search_long_term_memory(user_message:str, tags: list, db:AsyncSession):
     """embbed user query and search similary in vector store limiting search to region specified in tags
