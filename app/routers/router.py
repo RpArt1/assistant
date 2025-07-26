@@ -5,19 +5,22 @@ from io import BytesIO
 import re
 import uuid
 
-
 from ..utils import file_processor
 from ..services.ai_service import categorise_user_query
 from ..services.file_storing_service import store_memory
 from ..utils.enums import ToolEnum, TypeEnum
-from ..dependencies import get_db_session
-from ..services.conversation_service import reply_user
+from ..dependencies import get_conversation_service
+from ..services.conversation_service import ConversationService
 
 router = APIRouter()
 
-
 @router.post("/")
-async def process_user_query(message: str, conversation_id: str = None,  file: UploadFile = None, db: AsyncSession = Depends(get_db_session)):
+async def process_user_query(
+    message: str, 
+    conversation_id: str = None,  
+    file: UploadFile = None, 
+    conversation_service: ConversationService = Depends(get_conversation_service)
+):
     """ Main endpoint to which all user queries are sent, acts as router which determines which action should be taken
 
     Args:
@@ -37,12 +40,12 @@ async def process_user_query(message: str, conversation_id: str = None,  file: U
 
     # if user_query_categorisation contains filed tool and its value is "MEMORY" then save to database 
     if user_query_categorisation.get('tools') != None and user_query_categorisation.get('tools')[0] == ToolEnum.MEMORY.value:
-        await store_memory(message, file, conversation_id, db)
+        await store_memory(message, file, conversation_id)
     elif user_query_categorisation.get('type') == TypeEnum.QUERY.value: 
         tags = normalize_tags(user_query_categorisation.get('tags'))
         # prepare answer for user 
         conversation_uuid = resolve_conversation_id(conversation_id)
-        await reply_user(message,tags, str(conversation_uuid), db)
+        await conversation_service.reply_user(message, tags, str(conversation_uuid))
 
 
 def resolve_conversation_id(conversation_uuid : str) -> None: 

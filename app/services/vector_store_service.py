@@ -1,11 +1,19 @@
 import logging
+from qdrant_client import QdrantClient
 from qdrant_client.http.models import PointStruct
 from datetime import datetime
-from qdrant_client.http.models import Filter, FieldCondition, MatchAny, SearchRequest
+from qdrant_client.http.models import Filter, FieldCondition, MatchAny
 
 from app.utils.env_settings import  QDRANT_COLLECTION
-from app.dependencies import vector_store_client
+from ..utils.env_settings import QDRANT_API_KEY, QDRANT_URL
 
+#### QDRANT 
+# TODO: i moved it from depndencies → validate if correct during refactorS
+vector_store_client = QdrantClient(
+    QDRANT_URL,
+    api_key=QDRANT_API_KEY,
+    prefer_grpc=True,
+)
 
 def fetch_documents_uuids_from_vector_store(embedded_query: list, tags: list, top_k: int = 2):
     try:

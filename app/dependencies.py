@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from .utils.env_settings import DB_CONNECTION_STRING
+from fastapi import Depends
 
-
-from qdrant_client import QdrantClient
-from .utils.env_settings import QDRANT_API_KEY, QDRANT_URL
-
+from .services.conversation_service import ConversationService
+from .repositories.interfaces import IConversationRepository
+from .repositories.conversation_repository import SQLAlchemyConversationRepository
 
 engine = create_async_engine(DB_CONNECTION_STRING, echo=False) # echo set to TRUE logs sql TODO: move it to configureation 
 
@@ -18,12 +18,12 @@ async def get_db_session():
         yield session #ensures that each request gets its own session, isolated from other requests
 
 
+## Depnedncy injection for history repository
 
-#### QDRANT 
+def get_conversation_repository(db: AsyncSession = Depends(get_db_session)) -> IConversationRepository:
+    return SQLAlchemyConversationRepository(db)
 
-vector_store_client = QdrantClient(
-    QDRANT_URL,
-    api_key=QDRANT_API_KEY,
-    prefer_grpc=True,
-)
-
+def get_conversation_service(
+    repository: IConversationRepository = Depends(get_conversation_repository)
+)->ConversationService:
+    return ConversationService(repository)
