@@ -7,8 +7,7 @@ from qdrant_client.http.models import  VectorParams, Distance
 
 from app.routers import router, test_router
 from app.utils.env_settings import  QDRANT_COLLECTION
-from app.dependencies import vector_store_client
-
+from app.services.vector_store_service import vector_store_client
 # logging configuration
 
 logging.basicConfig(

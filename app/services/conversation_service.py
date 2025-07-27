@@ -8,7 +8,6 @@ from app.services import token_service, open_ai_service, vector_store_service
 from ..crud import db_crud
 from ..repositories.interfaces import IConversationRepository
 
-
 class ConversationService:
     def __init__(self, conversation_repository: IConversationRepository):
         self.conversation_repository = conversation_repository
@@ -21,7 +20,7 @@ class ConversationService:
         try:       
             prompt = await self._build_prompt(user_message, tags, conversation_id)
             response = open_ai_service.get_message_from_ai(prompt)
-            # await self._save_conversation(conversation_id, user_message, response)
+            await self._save_conversation(conversation_id, user_message, response)
             logging.info(f"{conversation_id} ==> Ok, response generated")
             logging.debug(f"{conversation_id} ==> Reply for user : {response}")
             return response
@@ -131,6 +130,6 @@ class ConversationService:
                         user_message=user_message,
                         chat_response=response,
             )
-            await conversation_crud.save_conversation(conversation)
+            await self.conversation_repository.save_conversation(conversation)
         except Exception as e: 
             logging.error(f"Cannot sava conversation: {e}")

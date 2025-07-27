@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.schemas.conversation_schema import ConversationSchema
 from ..repositories.interfaces import IConversationRepository
 from ..crud import conversation_crud
 
@@ -29,3 +30,6 @@ class SQLAlchemyConversationRepository(IConversationRepository):
 
         except Exception as e: 
             logging.error(f"Cannot sava conversation: {e}")
+
+    async def save_conversation(self, conversation: ConversationSchema):
+        await conversation_crud.save_conversation(conversation, self.db)
