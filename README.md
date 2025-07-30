@@ -61,12 +61,12 @@ go to http://localhost:8000 and try test endpoint
 run unit tests with command: 
 
 ```sh
-docker compose run test app/tests/unit
+docker compose run --rm test app/tests/unit
 ``` 
 
 !!! costs !!! 
 run regression tests with command
 ```sh
- docker compose run test app/tests/regression
+ docker compose run --rm test app/tests/regression
 ```
 !!! costs !!! 
