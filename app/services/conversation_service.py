@@ -1,9 +1,10 @@
 from datetime import datetime
 import logging
 
+from sqlalchemy import exc
+
 from ..utils import file_processor
 from ..crud import conversation_crud
-from ..schemas.conversation_schema import ConversationSchema
 from app.services import token_service, open_ai_service, vector_store_service
 from ..crud import db_crud
 from ..repositories.interfaces import IConversationRepository
@@ -15,19 +16,22 @@ class ConversationService:
 
     async def reply_user(self,user_message:str, tags:list, conversation_id:str) -> str:
 
-        logging.info(f"{conversation_id} ==> User posted message: {user_message}")
-
-        try:       
-            prompt = await self._build_prompt(user_message, tags, conversation_id)
-            response = open_ai_service.get_message_from_ai(prompt)
-            await self._save_conversation(conversation_id, user_message, response)
-            logging.info(f"{conversation_id} ==> Ok, response generated")
-            logging.debug(f"{conversation_id} ==> Reply for user : {response}")
-            return response
-        except ValueError as e:
-            logging.error(f"Error occured when generation response to user {e}")
+        logging.info(f"Reply to user: {conversation_id} ==> User posted message: {user_message}")
+        try:
+            conversation = await self.conversation_repository.fetch_conversations_by_uuid(conversation_id)
         except Exception as e:
-            logging.error(f"Error occured when generation response to user {e}")
+            logging.error(f"Can't reply user, cause: {e}")
+        # try:       
+        #     prompt = await self._build_prompt(user_message, tags, conversation_id)
+        #     response = open_ai_service.get_message_from_ai(prompt)
+        #     await self._save_conversation(conversation_id, user_message, response)
+        #     logging.info(f"{conversation_id} ==> Ok, response generated")
+        #     logging.debug(f"{conversation_id} ==> Reply for user : {response}")
+        #     return response
+        # except ValueError as e:
+        #     logging.error(f"Error occured when generation response to user {e}")
+        # except Exception as e:
+        #     logging.error(f"Error occured when generation response to user {e}")
 
 
     async def _build_prompt(self,user_message: str, tags:list, conversation_id:str):
@@ -120,16 +124,3 @@ class ConversationService:
         # logging.info(f"Knowledge based used for answering: {knowledge_base}")
         return knowledge_base
 
-    # TODO: redo → must call conversation_repository
-    async def _save_conversation(self,conversation_id: str, user_message: str, response: str ) -> None: 
-        try: 
-            if not conversation_id or not user_message or not response:
-                raise ValueError("Conversation ID, user message, and response must not be empty.")
-            conversation = ConversationSchema(
-                        uuid=conversation_id,
-                        user_message=user_message,
-                        chat_response=response,
-            )
-            await self.conversation_repository.save_conversation(conversation)
-        except Exception as e: 
-            logging.error(f"Cannot sava conversation: {e}")

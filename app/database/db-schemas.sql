@@ -16,16 +16,24 @@ CREATE TABLE `memories` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
-
-CREATE TABLE conversation (
-    id INTEGER NOT NULL AUTO_INCREMENT,
-    uuid CHAR(36) NOT NULL,
-    user_message VARCHAR(255),
-    chat_response VARCHAR(255),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
+-- New database schema
+CREATE TABLE conversations (
+    id VARCHAR(36) PRIMARY KEY,  -- UUID as aggregate root
+    title VARCHAR(255),
+    status ENUM('active', 'closed', 'archived') DEFAULT 'active',
+    meta_data JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_status_created (status, created_at)
 );
 
-ALTER TABLE conversation
-MODIFY COLUMN user_message TEXT,
-MODIFY COLUMN chat_response TEXT;
+CREATE TABLE conversation_messages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    conversation_id VARCHAR(36) NOT NULL,
+    role ENUM('user', 'assistant', 'system') NOT NULL,
+    content TEXT NOT NULL,
+    meta_data JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
+    INDEX idx_conversation_created (conversation_id, created_at)
+);

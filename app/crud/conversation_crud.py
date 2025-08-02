@@ -3,30 +3,17 @@ from sqlalchemy.future import select
 from sqlalchemy import asc
 import logging
 
-from ..schemas.conversation_schema import ConversationSchema
-from ..models.db_models import Conversation
+from ..models.db_models import ConversationModel
 
 
-async def save_conversation(conversation: ConversationSchema, db: AsyncSession) -> Conversation:
-    try:
-        db_memory = Conversation(
-            uuid=conversation.uuid,
-            user_message=conversation.user_message,
-            chat_response=conversation.chat_response,
+async def fetch_conversation_by_id(id: str, db: AsyncSession) -> ConversationModel:
+    try: 
+        result = await db.execute(
+            select(ConversationModel)
+            .where(ConversationModel.id == id )
         )
-        db.add(db_memory)
-        await db.commit()
-        await db.refresh(db_memory)
-
-        return db_memory
-    
-    except Exception as e: 
-        logging.error(e)
-
-async def fetch_conversations_by_uuid(uuid: str, db: AsyncSession) -> list[Conversation]:
-    try:
-        conversations = await db.execute(select(Conversation).where(Conversation.uuid == uuid).order_by(asc(Conversation.created_at)))
-        return conversations
+        conversation = result.scalar_one_or_none()
+        return conversation 
     except Exception as e:
-        logging.error(f"Error fetching conversations with uuid {uuid}: {e}")
-        return []
+        logging.error(f"Error fetching conversation with id {id}: {e}")
+        return None
