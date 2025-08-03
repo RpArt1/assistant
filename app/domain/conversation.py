@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List, Optional, Dict, Any
 from sqlalchemy.engine import create
 from enum import Enum
+from uuid import uuid4
 
 class MessageRole:
     USER = "user"

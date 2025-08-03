@@ -3,11 +3,14 @@ import logging
 
 from sqlalchemy import exc
 
+from app.repositories import conversation_repository
+
 from ..utils import file_processor
 from ..crud import conversation_crud
 from app.services import token_service, open_ai_service, vector_store_service
 from ..crud import db_crud
 from ..repositories.interfaces import IConversationRepository
+from ..domain.conversation import MessageRole, Conversation
 
 class ConversationService:
     def __init__(self, conversation_repository: IConversationRepository):
@@ -16,11 +19,21 @@ class ConversationService:
 
     async def reply_user(self,user_message:str, tags:list, conversation_id:str) -> str:
 
-        logging.info(f"Reply to user: {conversation_id} ==> User posted message: {user_message}")
-        try:
-            conversation = await self.conversation_repository.fetch_conversations_by_uuid(conversation_id)
-        except Exception as e:
-            logging.error(f"Can't reply user, cause: {e}")
+        conversation = await self.conversation_repository.get_conversation(conversation_id)
+        if not conversation:
+            conversation = Conversation()
+            conversation.add_message(MessageRole.SYSTEM, self._build_system_prompt())
+        
+        conversation.add_message(MessageRole.USER, user_message)
+        # search for relevant documents
+        # get response from ai
+        await self.conversation_repository.save_conversation(conversation)
+        return "test"
+        # save conversation
+
+
+
+
         # try:       
         #     prompt = await self._build_prompt(user_message, tags, conversation_id)
         #     response = open_ai_service.get_message_from_ai(prompt)
@@ -33,28 +46,16 @@ class ConversationService:
         # except Exception as e:
         #     logging.error(f"Error occured when generation response to user {e}")
 
-
-    async def _build_prompt(self,user_message: str, tags:list, conversation_id:str):
-
-        """Build prompt consisting of system prompt,  current query from user and if applicaple conversation history 
-
-        Args:
-            user_message (str): current message from user 
-            conversation_id (str): _description_
-        """
+    def _build_system_prompt(self):
         placeholders = {
             "assistant_name" : "X",
             "date" : (datetime.now()).strftime("%Y-%m-%d"),
             "user_name" : "Y"
         }
-        
-        conversations_list = await self._get_conversation_history(conversation_id)
-
         system_prompt = file_processor.process_file("../prompts/conversation_prompt.md", placeholders)
-        # section for ltm 
-        ## change user message to tokens 
-        
-        ## send query with tags to vectore store service for retreival
+        return system_prompt
+
+    async def _build_prompt(self,user_message: str, tags:list, conversation_id:str):
         long_term_memory_entry = []
         if (len(tags) > 0):
             long_term_memory= await self._search_long_term_memory(user_message, tags)
