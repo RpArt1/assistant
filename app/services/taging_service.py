@@ -7,7 +7,7 @@ import logging
 import traceback
 from ..utils import file_processor
 from ..utils.enums import  TagEnum
-from .open_ai_service import call_ai
+from .open_ai_service import OpenAIService
 
 
 class TagModel(BaseModel):
@@ -38,7 +38,7 @@ def tag_document(content: str, mock: bool = False) -> List:
        
     try:
         tag_prompt = file_processor.process_file("../prompts/tag_document_prompt.md")
-        tags = call_ai(content, tag_prompt, function_list)
+        tags = OpenAIService.call_ai(content, tag_prompt, function_list)
         logging.info(f"Query categorization : {tags}")
         return tags
     except Exception as e:

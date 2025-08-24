@@ -1,5 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+
+from app.services import open_ai_service
+from app.services.interfaces.interfaces import ILlmService
 from .utils.env_settings import DB_CONNECTION_STRING
 from fastapi import Depends
 
@@ -23,7 +26,11 @@ async def get_db_session():
 def get_conversation_repository(db: AsyncSession = Depends(get_db_session)) -> IConversationRepository:
     return SQLAlchemyConversationRepository(db)
 
+def get_llm_service() -> ILlmService:
+    return open_ai_service.OpenAIService
+
 def get_conversation_service(
-    repository: IConversationRepository = Depends(get_conversation_repository)
+    repository: IConversationRepository = Depends(get_conversation_repository),
+    llm_service: ILlmService = Depends(get_llm_service)
 )->ConversationService:
-    return ConversationService(repository)
+    return ConversationService(repository, llm_service)

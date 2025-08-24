@@ -28,10 +28,8 @@ class Message:
     
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "role": self.role.value,
+            "role": self.role,
             "content": self.content,
-            "metadata": self.metadata,
-            "created_at": self.created_at.isoformat()
         }
 
 
@@ -56,3 +54,15 @@ class Conversation:
         self.messages.append(message)
         self.updated_at = datetime.now()
         return message
+
+    def prepare_messages(self):
+        """
+        Convert all messages in the conversation to dictionary format.
+        
+        Returns:
+            List of message dictionaries if messages exist, None otherwise
+        """
+        if not self.messages:
+            return []
+        messages = [message.to_dict() for message in self.messages]
+        return messages

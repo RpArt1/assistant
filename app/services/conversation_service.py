@@ -4,47 +4,41 @@ import logging
 from sqlalchemy import exc
 
 from app.repositories import conversation_repository
+from app.services.interfaces.interfaces import  ILlmService
 
 from ..utils import file_processor
-from ..crud import conversation_crud
-from app.services import token_service, open_ai_service, vector_store_service
 from ..crud import db_crud
 from ..repositories.interfaces import IConversationRepository
 from ..domain.conversation import MessageRole, Conversation
 
 class ConversationService:
-    def __init__(self, conversation_repository: IConversationRepository):
+    def __init__(self, conversation_repository: IConversationRepository, llm_service: ILlmService):
         self.conversation_repository = conversation_repository
-
+        self.llm_service = llm_service
 
     async def reply_user(self,user_message:str, tags:list, conversation_id:str) -> str:
-
-        conversation = await self.conversation_repository.get_conversation(conversation_id)
-        if not conversation:
-            conversation = Conversation()
-            conversation.add_message(MessageRole.SYSTEM, self._build_system_prompt())
-        
-        conversation.add_message(MessageRole.USER, user_message)
-        # search for relevant documents
-        # get response from ai
-        await self.conversation_repository.save_conversation(conversation)
-        return "test"
-        # save conversation
-
-
-
-
-        # try:       
-        #     prompt = await self._build_prompt(user_message, tags, conversation_id)
-        #     response = open_ai_service.get_message_from_ai(prompt)
-        #     await self._save_conversation(conversation_id, user_message, response)
-        #     logging.info(f"{conversation_id} ==> Ok, response generated")
-        #     logging.debug(f"{conversation_id} ==> Reply for user : {response}")
-        #     return response
-        # except ValueError as e:
-        #     logging.error(f"Error occured when generation response to user {e}")
-        # except Exception as e:
-        #     logging.error(f"Error occured when generation response to user {e}")
+        try:
+            conversation = await self.conversation_repository.get_conversation(conversation_id)
+            # create new conversation if not exists and add message  
+            if not conversation:
+                conversation = Conversation()
+                conversation.add_message(MessageRole.SYSTEM, self._build_system_prompt())
+            
+            conversation.add_message(MessageRole.USER, user_message)
+            # search for relevant documents
+            # get response from ai
+            conversations_formated = conversation.prepare_messages()
+            response = self.llm_service.get_message_from_ai(conversations_formated)
+            if response:
+                logging.info(f"{conversation_id} ==> Ok, response generated")
+                logging.debug(f"{conversation_id} ==> Reply for user : {response}")
+                conversation.add_message(MessageRole.ASSISTANT, response)
+            await self.conversation_repository.save_conversation(conversation)
+            return response
+        except ValueError as e:
+            logging.error(f"Error occured when generation response to user {e}")
+        except Exception as e:
+            logging.error(f"Error occured when generation response to user {e}")
 
     def _build_system_prompt(self):
         placeholders = {
@@ -54,23 +48,6 @@ class ConversationService:
         }
         system_prompt = file_processor.process_file("../prompts/conversation_prompt.md", placeholders)
         return system_prompt
-
-    async def _build_prompt(self,user_message: str, tags:list, conversation_id:str):
-        long_term_memory_entry = []
-        if (len(tags) > 0):
-            long_term_memory= await self._search_long_term_memory(user_message, tags)
-            long_term_memory_entry = [{"role": "assistant", "content": long_term_memory}]
-
-        conversation_with_system_prompt = [{"role": "system", "content": system_prompt}] + long_term_memory_entry +  conversations_list 
-
-        conversation_with_system_prompt.append({"role": "user", "content": user_message})
-
-    
-        logging.debug(f"Full prompt {conversation_with_system_prompt}")
-        logging.info(f"Prompt without system message:  {conversation_with_system_prompt[2:]}")
-
-        return conversation_with_system_prompt
-
 
     async def _get_conversation_history(self,conversation_id: str) -> list:
         """Retrieve conversation history for a given conversation ID.
